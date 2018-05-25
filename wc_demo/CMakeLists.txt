@@ -15,11 +15,30 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
-add_executable(wc wc.cpp)
+file(GLOB SERIAL_SOURCE libserial/*)
+
+include_directories(
+    libserial	
+)
+
+add_library(lib_serial
+	${SERIAL_SOURCE}
+)
+
+add_executable(wc wc_one.cpp)
 ament_target_dependencies(wc rclcpp std_msgs geometry_msgs)
+
+add_executable(test_wc test_wc.cpp)
+ament_target_dependencies(test_wc rclcpp std_msgs)
+
+add_executable(led roslit.cpp)
+target_link_libraries(led lib_serial)
+ament_target_dependencies(led rclcpp std_msgs lib_serial)
 
 install(TARGETS
   wc
+  test_wc
+  led
   DESTINATION lib/${PROJECT_NAME}
 )
 
