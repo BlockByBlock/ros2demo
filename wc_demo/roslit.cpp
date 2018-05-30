@@ -15,7 +15,7 @@ void topic_callback(const std_msgs::msg::String::SharedPtr msg)
     if (msg->data == "Alert")
     {
         SerialStream aserial;
-        aserial.Open("/dev/ttyUSB0");
+        aserial.Open("/dev/ttyACM0");
         aserial.SetBaudRate(SerialStreamBuf::BAUD_9600);
         aserial.SetCharSize(SerialStreamBuf::CHAR_SIZE_8);
         aserial.SetNumOfStopBits(1);
