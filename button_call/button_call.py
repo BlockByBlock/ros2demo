@@ -4,18 +4,12 @@ import rclpy
 
 from std_msgs.msg import String
 
-# We do not recommend this style as ROS 2 provides timers for this purpose,
-# and it is recommended that all nodes call a variation of spin.
-# This example is only included for completeness because it is similar to examples in ROS 1.
-# For periodic publication please see the other examples using timers.
-
-
 def main(args=None):
     rclpy.init(args=args)
 
-    node = rclpy.create_node('minimal_publisher')
+    node = rclpy.create_node('button_node')
 
-    publisher = node.create_publisher(String, 'topic')
+    publisher = node.create_publisher(String, 'button')
 
     msg = String()
 
