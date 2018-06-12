@@ -26,4 +26,7 @@ cd ~/demo && python3 ./serialButton.py
 
 # On COM
 cd ~/ros2_ws && . install/local_setup.bash
+
 cd ~/Downloads/RMF_demo && python3 ./button_pub.py
+
+

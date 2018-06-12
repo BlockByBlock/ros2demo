@@ -8,7 +8,7 @@ setup(
     packages=[],
     py_modules=['button_call'],
     install_requires=['setuptools'],
-    author='BlockByBlock',
+    author='bingcheng',
     author_email='ybingcheng@gmail.com',
     description='Button call in ROS2',
     license='TODO',
