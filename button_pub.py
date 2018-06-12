@@ -12,13 +12,12 @@ def main(args=None):
     rclpy.init(args=args)
     node = rclpy.create_node('button_node')
     publisher = node.create_publisher(String, 'button')
-    msg = String()     # To minimize in the future
+    msg = String()    
 
     while rclpy.ok():
-        rcv = port.read(17)
-        print("Read: " + repr(rcv)[1:])
-
-        msg.data = repr(rcv)[1:]   # To put in correct variable
+        rcv = port.readline()
+        print("Read: " + repr(rcv)[2:-3])
+        msg.data = repr(rcv)[2:-3]
         node.get_logger().info("%s" % msg.data)
         publisher.publish(msg)
         time.sleep(0.1)
