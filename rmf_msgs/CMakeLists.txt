@@ -14,16 +14,23 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 set(msg_files
   "msg/CallButtonState.msg"
+  "msg/CallButtonStateArray.msg"
+)
+
+set(srv_files
+  "srv/GetUnitBeds.srv"
+  "srv/GetBedInfo.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${srv_files}
-  DEPENDENCIES builtin_interfaces 
+  DEPENDENCIES builtin_interfaces geometry_msgs
   ADD_LINTER_TESTS
 )
 
