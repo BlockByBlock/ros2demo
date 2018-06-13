@@ -48,11 +48,9 @@ class CallButtonKeyboard(Node):
             print('Port is connected')
         else:
             print('ERROR: Check serial port')
-    
-    def led_update(self):
-
 
     def main(self):
+        self.setup_button()
         print("Press to activate call button. Ctrl-C to exit.")
         self.send_ping()
         try:
