@@ -7,7 +7,9 @@ setup(
     version='0.0.0',
     packages=[],
     py_modules=[
-        'call_button_keyboard'],
+        'call_button_test',
+        'call_button_keyboard'
+        ],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
@@ -30,6 +32,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'call_button_test = call_button_test:main',
             'call_button_keyboard = call_button_keyboard:main'
         ],
     },

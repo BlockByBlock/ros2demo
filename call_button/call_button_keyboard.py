@@ -9,11 +9,6 @@ import termios
 import time
 import tty
 
-# For physical button
-import RPi.GPIO as GPIO
-import time
-import serial
-
 class CallButtonKeyboard(Node):
     def __init__(self):
         super().__init__('call_button_keyboard')
@@ -25,12 +20,6 @@ class CallButtonKeyboard(Node):
         self.state_msg = CallButtonState(id=self.id)
         tty.setcbreak(sys.stdin.fileno())
         self.last_send_time = time.time()
-        # config
-        #self.led_pin = 7
-        self.btn_pin_one = 12
-        self.GPIO.setmode(GPIO.BOARD)
-        #self.setup(self.led_pin, GPIO.OUT)
-        self.setup(self.btn_pin_one, GPIO.IN)
 
     def send_ping(self):
         self.last_send_time = time.time()
@@ -42,28 +31,25 @@ class CallButtonKeyboard(Node):
         self.send_ping()
         return response
 
-    def setup_button(self):
-        self.port = serial.Serial("/dev/ttyS0", baudrate=115200, timeout=3.0)
-        if self.port.is_open:
-            print('Port is connected')
-        else:
-            print('ERROR: Check serial port')
-
     def main(self):
-        self.setup_button()
-        print("Press to activate call button. Ctrl-C to exit.")
+        print("[spacebar] activates the call button. 'r' to resets it. Ctrl-C to exit.")
         self.send_ping()
         try:
             while True:
                 rclpy.spin_once(self, timeout_sec=0.1)
-                # read status of pin and assign to self.state_msg.pressed
-                self.state_msg.pressed = GPIO.input(self.btn_pin_one)
-                print("Button State:  " + self.state_msg.pressed)
-                self.send_ping()
+                i, o, e = select.select([sys.stdin], [], [], 0.1)
+                if i:
+                    key = sys.stdin.read(1)
+                    if key == 'r':
+                        print("call button reset!")
+                        self.state_msg.pressed = False
+                    else:
+                        print("call button activated!")
+                        self.state_msg.pressed = True
+                    self.send_ping()
                 t = time.time()
                 if t > self.last_send_time + self.ping_interval_sec:
                     self.send_ping()
-
         except KeyboardInterrupt:
             pass  # Ctrl-C was pressed. Time to exit the loop.
         except Exception as e:
@@ -79,4 +65,4 @@ def main(args=None):
     node.main()
 
 if __name__ == '__main__':
-    main()
+main()
