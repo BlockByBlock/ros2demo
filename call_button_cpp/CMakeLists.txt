@@ -14,11 +14,13 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rmf_msgs REQUIRED)
 
-file(GLOB WP_FILES ~/WiringNP/wiringPi/*)
+file(GLOB WP_FILES /root/WiringNP/wiringPi/*)
 
-include_directories(~/WiringNP/wiringPi)
+include_directories(/root/WiringNP/wiringPi)
 
-add_library(wnp_lib ${WP_FILES})
+add_library(wnp_lib 
+    ${WP_FILES}
+)
 
 add_executable(call_button_np call_button_np.cpp)
 ament_target_dependencies(call_button_np rclcpp rmf_msgs)
