@@ -1,19 +1,33 @@
 #include <chrono>
 #include <wiringPi.h>
-#include <iostream.h>
+#include <iostream>
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "rmf_msgs/msg/CallButtonState.hpp"
+#include "rmf_msgs/msg/call_button_state.hpp"
 
 using namespace std::chrono_literals;
+
+class HelpButton
+{
+public:
+    HelpButton(): led_pin(7), btn_pin(12), btn_state(0)
+    {
+        wiringPiSetupPhys();
+        pinMode(led_pin, OUTPUT);
+        pinMode(btn_pin, INPUT);
+    }
+    int led_pin;
+    int btn_pin;
+    int btn_state;
+};
 
 class CallButton : public HelpButton, public rclcpp::Node
 {
 public:
     CallButton(): HelpButton(), Node("talker"), count_(0)
     {
-        publisher_ = this->create_publisher<std_msgs::msg::String>("chatter");
+        publisher_ = this->create_publisher<rmf_msgs::msg::CallButtonState>("call_button_state");
         auto timer_callback =
             [this]() -> void {
                 auto msg = rmf_msgs::msg::CallButtonState();
@@ -39,23 +53,8 @@ public:
 
 private:
     rclcpp::TimerBase::SharedPtr timer_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+    rclcpp::Publisher<rmf_msgs::msg::CallButtonState>::SharedPtr publisher_;
     size_t count_;
-};
-
-class HelpButton
-{
-public:
-    HelpButton(): led_pin(7), btn_pin(12), btn_state(0)
-    {
-        wiringPiSetupPhys();
-        pinMode(led_pin, OUTPUT);
-        pinMode(btn_pin, INPUT);
-    }
-private:
-    int led_pin;
-    int btn_pin;
-    int btn_state;
 };
 
 int main(int argc, char * argv[])
