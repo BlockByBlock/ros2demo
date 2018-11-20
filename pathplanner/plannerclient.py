@@ -5,10 +5,7 @@ Planner Client
 
 todo:
 - repeat cycle
-- add marker on rviz
-
-wpmark.pose.position.x
-wpmark.pose.position.y
+- criteria check
 """
 import rospy
 import actionlib
@@ -16,7 +13,9 @@ import yaml
 import sys
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import PoseWithCovarianceStamped
-# from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Pose, Point, Vector3, Quaternion
+from visualization_msgs.msg import Marker
+from std_msgs.msg import Header, ColorRGBA
 
 
 class PlannerClient(object):
@@ -27,8 +26,8 @@ class PlannerClient(object):
             'move_base', MoveBaseAction)
         self.initpub = rospy.Publisher(
             'initialpose', PoseWithCovarianceStamped, queue_size=10)
-        # self.wpmark = rospy.Publisher(
-        #         'frame', Marker, queue_size=10)
+        self.markerpub = rospy.Publisher(
+            'visualization_marker', Marker, queue_size=10)
 
     def start(self):
         print('Connect to Action Server ..')
@@ -76,6 +75,27 @@ class PlannerClient(object):
                     startpose.pose.pose.orientation.z,
                     startpose.pose.pose.orientation.w))
 
+        return True
+
+    def marker_manager(self, marker_id, px, py, pz):
+        """
+        Displaying waypoints with markers on rviz
+        """
+        marker = Marker(
+            type=Marker.SPHERE,
+            id=marker_id,
+            lifetime=rospy.Duration(1000),
+            pose=Pose(Point(px, py, pz), Quaternion(0, 0, 0, 1)),
+            scale=Vector3(0.05, 0.05, 0.05),
+            header=Header(frame_id='map'),
+            color=ColorRGBA(0.0, 2.0, 0.0, 0.8)
+        )
+
+        rospy.sleep(0.5)
+        self.markerpub.publish(marker)
+
+        return True
+
     def goal_manager(self):
         """
         Prepare goal. Send Goal.
@@ -104,8 +124,10 @@ class PlannerClient(object):
                 rospy.logerr('Action server not available!')
                 rospy.signal_shutdown('Action server not available!')
             else:
-                print('STATUS: step{} completed!').format(step+1)
-                rospy.loginfo('HURRAY goal completed!')
+                print('STATUS: ON STEP {}!').format(step+1)
+                rospy.loginfo('Goal done!')
+
+        rospy.loginfo('Journey COMPLETED')
 
 
 if __name__ == '__main__':
