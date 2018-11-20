@@ -6,9 +6,14 @@ project(pathplanner)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   move_base_msgs
+	geometry_msgs
   rospy
 )
 
 catkin_package(
-  CATKIN_DEPENDS actionlib move_base_msgs rospy 
+  CATKIN_DEPENDS 
+		actionlib 
+		move_base_msgs 
+		geometry_msgs 
+		rospy 
 )

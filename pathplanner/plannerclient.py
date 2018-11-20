@@ -4,23 +4,34 @@ Planner Client
 <ybingcheng@gmail.com>
 
 todo:
-- add waypoints
-- add server cutoff
+- repeat cycle
+- add marker on rviz
+
+wpmark.pose.position.x
+wpmark.pose.position.y
 """
 import rospy
 import actionlib
 import yaml
 import sys
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import PoseWithCovarianceStamped
+# from visualization_msgs.msg import Marker
 
 
 class PlannerClient(object):
     def __init__(self):
         self.path = list()
+        self.initpose = list()
         self.client = actionlib.SimpleActionClient(
             'move_base', MoveBaseAction)
+        self.initpub = rospy.Publisher(
+            'initialpose', PoseWithCovarianceStamped, queue_size=10)
+        # self.wpmark = rospy.Publisher(
+        #         'frame', Marker, queue_size=10)
 
     def start(self):
+        print('Connect to Action Server ..')
         self.client.wait_for_server()
 
     def load_config_file(self, filename):
@@ -34,12 +45,36 @@ class PlannerClient(object):
         f.close()
 
         self.path = config['journey']['waypoints']
+        self.initpose = config['journey']['initpose']
 
-        print ("Your itinerary in position(x, y) & orientation(z, w):")
+        print('Initialising position at {}').format(self.initpose)
+
+        print ('Your itinerary in position(x, y) & orientation(z, w):')
         for step in range(len(self.path)):
             print ("Step {}: {}").format(step+1, self.path[step])
 
         return True
+
+    def init_manager(self):
+        """
+        Init position based on config file.
+        """
+        startpose = PoseWithCovarianceStamped()
+        startpose.header.frame_id = 'map'
+        startpose.pose.pose.position.x = self.initpose[0][0]
+        startpose.pose.pose.position.y = self.initpose[0][1]
+        startpose.pose.pose.position.z = 0
+        startpose.pose.pose.orientation.z = self.initpose[0][2]
+        startpose.pose.pose.orientation.w = self.initpose[0][3]
+
+        rospy.sleep(1)
+        self.initpub.publish(startpose)
+
+        rospy.loginfo('Init @ (x,y,z,w): %s, %s, %s, %s' % (
+                    startpose.pose.pose.position.x,
+                    startpose.pose.pose.position.y,
+                    startpose.pose.pose.orientation.z,
+                    startpose.pose.pose.orientation.w))
 
     def goal_manager(self):
         """
@@ -75,8 +110,8 @@ class PlannerClient(object):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("usage:   plannerclient.py CONFIG.yaml")
-        print("example: plannerclient.py config/journey.yaml")
+        print('usage:   plannerclient.py CONFIG.yaml')
+        print('example: plannerclient.py config/journey.yaml')
         sys.exit(1)
 
     try:
@@ -87,6 +122,7 @@ if __name__ == '__main__':
             print("INVALID journey configuration file!")
             sys.exit(1)
 
+        pc.init_manager()
         pc.start()
         pc.goal_manager()
 
