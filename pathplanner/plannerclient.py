@@ -29,10 +29,6 @@ class PlannerClient(object):
         self.markerpub = rospy.Publisher(
             'visualization_marker', Marker, queue_size=10)
 
-    def start(self):
-        print('Connect to Action Server ..')
-        self.client.wait_for_server()
-
     def load_config_file(self, filename):
         try:
             f = open(filename, 'r')
@@ -66,7 +62,7 @@ class PlannerClient(object):
         startpose.pose.pose.orientation.z = self.initpose[0][2]
         startpose.pose.pose.orientation.w = self.initpose[0][3]
 
-        rospy.sleep(1)
+        rospy.sleep(0.5)
         self.initpub.publish(startpose)
 
         rospy.loginfo('Init @ (x,y,z,w): %s, %s, %s, %s' % (
@@ -75,9 +71,19 @@ class PlannerClient(object):
                     startpose.pose.pose.orientation.z,
                     startpose.pose.pose.orientation.w))
 
+        for step in range(len(self.path)):
+            self.marker_manager(
+                step, self.path[step][0], self.path[step][1]
+            )
+            print('Marking point {}, {}').format(
+                self.path[step][0], self.path[step][1])
+
+        print('Connect to Action Server ..')
+        self.client.wait_for_server()
+
         return True
 
-    def marker_manager(self, marker_id, px, py, pz):
+    def marker_manager(self, marker_id, px, py):
         """
         Displaying waypoints with markers on rviz
         """
@@ -85,16 +91,14 @@ class PlannerClient(object):
             type=Marker.SPHERE,
             id=marker_id,
             lifetime=rospy.Duration(1000),
-            pose=Pose(Point(px, py, pz), Quaternion(0, 0, 0, 1)),
-            scale=Vector3(0.05, 0.05, 0.05),
+            pose=Pose(Point(px, py, 0), Quaternion(0, 0, 0, 1)),
+            scale=Vector3(0.25, 0.25, 0.25),
             header=Header(frame_id='map'),
             color=ColorRGBA(0.0, 2.0, 0.0, 0.8)
         )
 
         rospy.sleep(0.5)
         self.markerpub.publish(marker)
-
-        return True
 
     def goal_manager(self):
         """
@@ -141,11 +145,11 @@ if __name__ == '__main__':
         pc = PlannerClient()
 
         if not pc.load_config_file(sys.argv[1]):
-            print("INVALID journey configuration file!")
+            print('INVALID journey configuration file!')
             sys.exit(1)
 
-        pc.init_manager()
-        pc.start()
+        if not pc.init_manager():
+            rospy.logerr('Fail to initialise ..')
         pc.goal_manager()
 
     except rospy.ROSInterruptException:
